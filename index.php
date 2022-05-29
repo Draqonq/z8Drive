@@ -4,7 +4,7 @@
         if($_SESSION['z8error'] == 1){
             echo "Blokada na to konto trwa minutę!";
         }
-        else{
+        else if($_SESSION['z8error'] == 2){
             echo "Na konto została nałożona blokada!";
         }
         unset($_SESSION['z8error']);

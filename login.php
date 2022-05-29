@@ -31,14 +31,26 @@
             $newDate = date('Y-m-d H:i:s', strtotime(' -1 minutes'));
             if($rowLogs[5] == 1 && $date > $newDate){
                 $_SESSION['z8error'] = 1;
+                header('Location: index.php');
             }
             else{
                 if($password == $pass){
                     //Poprawne logowanie
+                    $lastLogs = "SELECT * FROM logi WHERE idu = $iduser ORDER BY datetime DESC LIMIT 1;";
+                    $resultLogs = mysqli_query($polaczenie, $lastLogs) or die ("SQL error 2: $dbname");
+                    $rowLogs = $resultLogs->fetch_row();
+                    if($resultLogs->num_rows > 0){
+                        $isBlockade = $rowLogs[5];
+                        if($isBlockade){
+                            $_SESSION['z8error'] = 3;
+                        }
+                    }
+
                     $logs = "INSERT INTO logi (idu, ip_address, correct) VALUES ('$iduser', '$ip', 1);";
                     $sendlogs = mysqli_query($polaczenie, $logs) or die ("SQL error 2: $dbname");
                     
                     $_SESSION['z8user'] = $iduser;
+                    echo $_SESSION['z8error'];
                     header('Location: drive.php');
                 }
                 else{
@@ -57,6 +69,8 @@
                     if($blockadeIter >= 2){
                         //Blokada
                         $logs = "INSERT INTO logi (idu, ip_address, correct, blockade) VALUES ('$iduser', '$ip', 0, 1);";
+                        $logs_blockade = "INSERT INTO logi_blockade (idu, ip_address) VALUES ('$iduser', '$ip');";
+                        $sendlogs_blockade = mysqli_query($polaczenie, $logs_blockade) or die ("SQL error 2: $dbname");
                         $_SESSION['z8error'] = 2;
                     }
                     else{
@@ -64,9 +78,15 @@
                         $logs = "INSERT INTO logi (idu, ip_address, correct, blockade) VALUES ('$iduser', '$ip', 0, 0);";
                     }
                     $sendlogs = mysqli_query($polaczenie, $logs) or die ("SQL error 2: $dbname");
+                    header('Location: index.php');
                 }
             }
         }
+        else{
+            header('Location: index.php');
+        }
     }
-    header('Location: index.php');
+    else{
+        header('Location: index.php');
+    }
 ?>
