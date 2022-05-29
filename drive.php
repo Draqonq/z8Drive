@@ -18,6 +18,7 @@
     $getUser = "SELECT * FROM users WHERE idu = '$iduser' LIMIT 1;";
     $resultUser = mysqli_query($polaczenie, $getUser) or die ("SQL error : $dbname");
     $row = $resultUser->fetch_row();
+    $fileView = "icon";
     if($resultUser->num_rows > 0){
         $login = $row[1];
     }
@@ -45,6 +46,10 @@
     if(isset($_GET['backDir'])){
         $getDirectory = $_GET['backDir'];
         $directoryPath = dirname($getDirectory);
+    }
+
+    if(isset($_SESSION['fileView'])){
+        $fileView = $_SESSION['fileView'];
     }
 ?>
 <!DOCTYPE html>
@@ -75,16 +80,17 @@
         .folderName{
             height: 25px;
         }
-        button{
+        button, .file{
             width: 50px;
             height: 50px;
-            border: 1px solid black;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            overflow: hidden;
             font-size: 10px;
+            border: none;
+            background-color: white;
+            cursor: pointer;
         }
         img{
             width: 35px;
@@ -93,6 +99,11 @@
 </head>
 <body>
     <a href="logout.php"><h2>Logout</h2></a>
+    <form action="fileview.php" method="post">
+        Widok plików:
+        <button name="fileView" value="normal">Nazwy plików</button>
+        <button name="fileView" value="icon">Ikony</button>
+    </form>
     <form action="createfolder.php" method="post">
         Directory name: <input class="folderName" type="text" name="folderName">
         <button name="directory" value="<?php echo $directoryPath ?>">
@@ -118,10 +129,33 @@
                 if($file === '.' || $file === '..') {continue;}
                 else{
                     if(is_file("$directoryPath/$file")){
-                        echo "<img src='file.png' alt='$file'>";
+                        if($fileView == "icon"){
+                            $pathinfo = pathinfo("$directoryPath/$file");
+                            $extension = $pathinfo['extension'];
+                            if($extension == "png" || $extension == "jpg" || $extension == "jpeg" || $extension == "gif"){
+                                echo "<div class='file'><a href='$directoryPath/$file'><img src='$directoryPath/$file' alt='$file'></a>$file</div>";
+                            }
+                            else if($extension == "mp4" || $extension == "avi"){
+                                echo "<div class='file'><a href='$directoryPath/$file'><img src='video.png' alt='$file'></a>$file</div>";
+                            }
+                            else if($extension == "mp3" || $extension == "wav"){
+                                echo "<div class='file'><a href='$directoryPath/$file'><img src='audio.png' alt='$file'></a>$file</div>";
+                            }
+                            else{
+                                echo "<div class='file'><a href='$directoryPath/$file'><img src='file.png' alt='$file'></a>$file</div>";
+                            }
+                        }
+                        else{
+                            echo "<a href='$directoryPath/$file'>$file</a>";
+                        }
                     }
                     else if(is_dir("$directoryPath/$file")){
-                        echo "<button name='dirName' value='$directoryPath/$file'><img src='folder.png' alt='$file'>$file</button>";
+                        if($fileView == "icon"){
+                            echo "<button name='dirName' value='$directoryPath/$file'><img src='folder.png' alt='$file'>$file</button>";
+                        }
+                        else{
+                            echo "<button name='dirName' value='$directoryPath/$file'>$file</button>";
+                        }
                     }
                 }
             }
