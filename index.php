@@ -7,6 +7,9 @@
         else if($_SESSION['z8error'] == 2){
             echo "Na konto została nałożona blokada!";
         }
+        else if($_SESSION['z8error'] == 4){
+            echo "Ta nazwa uzytkownika jest zajęta";
+        }
         unset($_SESSION['z8error']);
     }
     if(isset($_SESSION['z8user'])){

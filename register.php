@@ -15,8 +15,19 @@
     $rpassword = $_POST['rpassword'];
 
     if($password == $rpassword){
-        $sql = "INSERT INTO users (login, password) VALUES ('$login', '$password');";
-        $result = mysqli_query($polaczenie, $sql);
+        $isUser = "SELECT * FROM users WHERE login = '$login' LIMIT 1;";
+        $resultLogs = mysqli_query($polaczenie, $isUser) or die ("SQL error: $dbname");
+        if($resultLogs->num_rows <= 0){
+            $sql = "INSERT INTO users (login, password) VALUES ('$login', '$password');";
+            $result = mysqli_query($polaczenie, $sql) or die ("SQL error 2: $dbname");;
+            $directoryPath = 'users/'.$login;
+            if(mkdir($directoryPath, 0777, true)){
+                //Poprawnie
+            }
+        }
+        else{
+            $_SESSION['z8error'] = 4;
+        }
     }
 
     mysqli_close($polaczenie);

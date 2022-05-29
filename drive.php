@@ -9,14 +9,21 @@
         exit;
     }
     $polaczenie->query("SET NAMES 'utf8'");
+    $login = null;
 
     if(!isset($_SESSION['z8user'])){
         header('Location: index.php');
     }
+    $iduser = $_SESSION['z8user'];
+    $getUser = "SELECT * FROM users WHERE idu = '$iduser' LIMIT 1;";
+    $resultUser = mysqli_query($polaczenie, $getUser) or die ("SQL error : $dbname");
+    $row = $resultUser->fetch_row();
+    if($resultUser->num_rows > 0){
+        $login = $row[1];
+    }
     if(isset($_SESSION['z8error'])){
         if($_SESSION['z8error'] == 3){
-            $iduser = $_SESSION['z8user'];
-            $lastLogs = "SELECT * FROM logi WHERE idu = $iduser ORDER BY datetime DESC LIMIT 2;";
+            $lastLogs = "SELECT * FROM logi WHERE idu = '$iduser' ORDER BY datetime DESC LIMIT 2;";
             $resultLogs = mysqli_query($polaczenie, $lastLogs) or die ("SQL error 2: $dbname");
             $date = null;
             while ($rowLogs = mysqli_fetch_array ($resultLogs)){
@@ -28,6 +35,17 @@
         }
         unset($_SESSION['z8error']);
     }
+    $directoryPath = 'users/'.$login;
+
+    if(isset($_GET['dirName'])){
+        $getDirectory = $_GET['dirName'];
+        $directoryPath = $getDirectory;
+    }
+
+    if(isset($_GET['backDir'])){
+        $getDirectory = $_GET['backDir'];
+        $directoryPath = dirname($getDirectory);
+    }
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -37,13 +55,77 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Głośnicki</title>
     <style>
+        *{
+            box-sizing: border-box;
+        }
+        body{
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
         .error{
             color: red;
             font-weight: bold;
         }
+        form{
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .folderName{
+            height: 25px;
+        }
+        button{
+            width: 50px;
+            height: 50px;
+            border: 1px solid black;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            font-size: 10px;
+        }
+        img{
+            width: 35px;
+        }
     </style>
 </head>
 <body>
-    <a href="logout.php">Logout</a>
+    <a href="logout.php"><h2>Logout</h2></a>
+    <form action="createfolder.php" method="post">
+        Directory name: <input class="folderName" type="text" name="folderName">
+        <button name="directory" value="<?php echo $directoryPath ?>">
+            <img src="createFolder.png" alt="create folder">
+            Create folder
+        </button>
+    </form>
+    <form action="upload.php" method="post" enctype="multipart/form-data">
+        <input type="file" name="fileToUpload">
+        <button name="directory" value="<?php echo $directoryPath ?>">
+            <img src="upload.png" alt="create folder">
+            Upload file
+        </button>
+    </form>
+    <form action="#" method="get">
+        <?php
+            $userDirectory = 'users/'.$login;
+            if($directoryPath != $userDirectory){
+                echo "<button name='backDir' value='$directoryPath'><img src='backdir.jpg' alt='Powrót'>Wróć</button>";
+            }
+            $files = scandir($directoryPath);
+            foreach($files as $file){
+                if($file === '.' || $file === '..') {continue;}
+                else{
+                    if(is_file("$directoryPath/$file")){
+                        echo "<img src='file.png' alt='$file'>";
+                    }
+                    else if(is_dir("$directoryPath/$file")){
+                        echo "<button name='dirName' value='$directoryPath/$file'><img src='folder.png' alt='$file'>$file</button>";
+                    }
+                }
+            }
+        ?>
+    </form>
 </body>
 </html>
