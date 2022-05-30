@@ -52,7 +52,7 @@
 <body>
     <header>
         <form action="login.php" method="post">
-            <h2>Logowanie klienta</h2>
+            <h2>Logowanie</h2>
             Login:
             <input type="text" name="login">
             Hasło:
