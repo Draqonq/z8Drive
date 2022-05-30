@@ -34,6 +34,9 @@
             }
             echo "<p class='error'>Nastąpiło trzykrotne błędne logowanie, konto zostało zablokowane $date </p>";
         }
+        else if($_SESSION['z8error'] == 5){
+            echo "<p class='error'>Plik został udostępniony</p>";
+        }
         unset($_SESSION['z8error']);
     }
     $directoryPath = 'users/'.$login;
@@ -116,6 +119,32 @@
         <button name="directory" value="<?php echo $directoryPath ?>">
             <img src="upload.png" alt="create folder">
             Upload file
+        </button>
+    </form>
+    <form action="share.php" method="post">
+        Share file: 
+        <select name="fromFile">
+            <?php
+                $files = scandir($directoryPath);
+                foreach($files as $file){
+                    if($file === '.' || $file === '..' || is_dir("$directoryPath/$file")) {continue;}
+                    echo "<option value='$directoryPath/$file'>$file</option>";
+                }
+            ?>
+        </select>
+        <select name="toUser">
+            <?php
+                $allUser = "SELECT * FROM users WHERE NOT login = '$login'";
+                $resultAllUser = mysqli_query($polaczenie, $allUser) or die ("SQL error 2: $dbname");
+                while ($rowUser = mysqli_fetch_array ($resultAllUser)){
+                    $name = $rowUser[1];
+                    echo "<option value='$name'>$name</option>";
+                }
+            ?>
+        </select>
+        <button>
+            <img src="share.png" alt="create folder">
+            Share
         </button>
     </form>
     <form action="#" method="get">
